@@ -2,7 +2,7 @@
   "annotations": {
     "list": []
   },
-  "description": "Activity and availability of the official 5chan boards.",
+  "description": "Activity and availability of the 5chan boards monitored by Bitsocial.",
   "editable": false,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -16,7 +16,7 @@
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "[Network overview](/public-dashboards/e9277bcc0c421ddcacd29f591466678c) &nbsp;·&nbsp; **5chan boards**\n\nActivity and availability of the 65 boards in the official 5chan directories.",
+        "content": "[Network overview](/public-dashboards/e9277bcc0c421ddcacd29f591466678c) &nbsp;·&nbsp; **5chan boards** &nbsp;·&nbsp; [Seedit communities](/public-dashboards/c770d7565c18df52dd26461c9191e05d)\n\nActivity and availability of the 65 boards in the official 5chan directories.",
         "mode": "markdown"
       },
       "title": "",
@@ -35,7 +35,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "Boards from the official 5chan directories whose latest fetch succeeded and whose latest update is less than 2 hours old.",
+      "description": "Boards whose latest fetch succeeded and whose latest update is less than 2 hours old.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -85,10 +85,10 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "(sum(((max without(client_id, instance, job, service, subplebbit_address) (bitsocial_stats_last_community_update_fetch_seconds_since_updated_at{client_id=\"5chan\"}) < bool 7200) * max without(client_id, instance, job, service, subplebbit_address) (bitsocial_stats_last_community_update_fetch_success{client_id=\"5chan\"})) or (max without(client_id, instance, job, service, subplebbit_address) (bitsocial_stats_last_community_update_fetch_success{client_id=\"5chan\"}) * 0)) or vector(0))",
-          "instant": false,
+          "expr": "sum(((max without(instance, job, service, subplebbit_address) (bitsocial_stats_last_community_update_fetch_seconds_since_updated_at{client_id=\"5chan\"}) < bool 7200) * max without(instance, job, service, subplebbit_address) (bitsocial_stats_last_community_update_fetch_success{client_id=\"5chan\"})) or (max without(instance, job, service, subplebbit_address) (bitsocial_stats_last_community_update_fetch_success{client_id=\"5chan\"}) * 0))",
+          "instant": true,
           "legendFormat": "__auto",
-          "range": true,
+          "range": false,
           "refId": "A"
         }
       ],
@@ -107,7 +107,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "All-time threads across the official 5chan boards.",
+      "description": "All-time threads and replies, counted like the 5chan homepage.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -131,7 +131,7 @@
       },
       "options": {
         "colorMode": "none",
-        "graphMode": "area",
+        "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
@@ -150,14 +150,14 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum(max without(client_id, instance, job, service, subplebbit_address) (bitsocial_stats_community_stats_all_post_count{client_id=\"5chan\"}))",
-          "instant": false,
+          "expr": "sum(max without(instance, job, service, subplebbit_address) (bitsocial_stats_community_stats_all_post_count{client_id=\"5chan\"})) + sum(max without(instance, job, service, subplebbit_address) (bitsocial_stats_community_stats_all_reply_count{client_id=\"5chan\"}))",
+          "instant": true,
           "legendFormat": "__auto",
-          "range": true,
+          "range": false,
           "refId": "A"
         }
       ],
-      "title": "Threads",
+      "title": "Total posts",
       "type": "stat",
       "id": 3,
       "gridPos": {
@@ -172,7 +172,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "All-time replies across the official 5chan boards.",
+      "description": "Threads and replies from the last 24 hours in boards the monitor can currently fetch.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -196,7 +196,7 @@
       },
       "options": {
         "colorMode": "none",
-        "graphMode": "area",
+        "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
@@ -215,14 +215,14 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum(max without(client_id, instance, job, service, subplebbit_address) (bitsocial_stats_community_stats_all_reply_count{client_id=\"5chan\"}))",
-          "instant": false,
+          "expr": "sum(max without(instance, job, service, subplebbit_address) (bitsocial_stats_community_stats_day_post_count{client_id=\"5chan\"}) and (max without(instance, job, service, subplebbit_address) (bitsocial_stats_last_community_update_fetch_success{client_id=\"5chan\"}) == 1)) + sum(max without(instance, job, service, subplebbit_address) (bitsocial_stats_community_stats_day_reply_count{client_id=\"5chan\"}) and (max without(instance, job, service, subplebbit_address) (bitsocial_stats_last_community_update_fetch_success{client_id=\"5chan\"}) == 1))",
+          "instant": true,
           "legendFormat": "__auto",
-          "range": true,
+          "range": false,
           "refId": "A"
         }
       ],
-      "title": "Replies",
+      "title": "Posts (24h)",
       "type": "stat",
       "id": 4,
       "gridPos": {
@@ -237,7 +237,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "Addresses that posted in the last 30 days, summed per board.",
+      "description": "Addresses that posted in the last 7 days, counted like the 5chan homepage: summed per board, so an address active in several boards counts once for each.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -261,7 +261,7 @@
       },
       "options": {
         "colorMode": "none",
-        "graphMode": "area",
+        "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
@@ -280,14 +280,14 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum(max without(client_id, instance, job, service, subplebbit_address) (bitsocial_stats_community_stats_month_active_user_count{client_id=\"5chan\"}))",
-          "instant": false,
+          "expr": "sum(max without(instance, job, service, subplebbit_address) (bitsocial_stats_community_stats_week_active_user_count{client_id=\"5chan\"}))",
+          "instant": true,
           "legendFormat": "__auto",
-          "range": true,
+          "range": false,
           "refId": "A"
         }
       ],
-      "title": "Monthly active",
+      "title": "Current users",
       "type": "stat",
       "id": 5,
       "gridPos": {
@@ -315,7 +315,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "New threads and replies across all 5chan boards within each rolling hour, as reported by each board's own stats.",
+      "description": "Threads and replies from the last 24 hours, as reported by each board's own stats.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -325,7 +325,7 @@
             "axisBorderShow": false,
             "axisPlacement": "auto",
             "drawStyle": "line",
-            "fillOpacity": 12,
+            "fillOpacity": 35,
             "gradientMode": "opacity",
             "lineInterpolation": "smooth",
             "lineWidth": 2,
@@ -396,7 +396,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum(max without(client_id, instance, job, service, subplebbit_address) (bitsocial_stats_community_stats_hour_post_count{client_id=\"5chan\"}) and (max without(client_id, instance, job, service, subplebbit_address) (bitsocial_stats_last_community_update_fetch_success{client_id=\"5chan\"}) == 1))",
+          "expr": "sum(max without(instance, job, service, subplebbit_address) (bitsocial_stats_community_stats_day_post_count{client_id=\"5chan\"}) and (max without(instance, job, service, subplebbit_address) (bitsocial_stats_last_community_update_fetch_success{client_id=\"5chan\"}) == 1))",
           "instant": false,
           "legendFormat": "Threads",
           "range": true,
@@ -408,14 +408,14 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum(max without(client_id, instance, job, service, subplebbit_address) (bitsocial_stats_community_stats_hour_reply_count{client_id=\"5chan\"}) and (max without(client_id, instance, job, service, subplebbit_address) (bitsocial_stats_last_community_update_fetch_success{client_id=\"5chan\"}) == 1))",
+          "expr": "sum(max without(instance, job, service, subplebbit_address) (bitsocial_stats_community_stats_day_reply_count{client_id=\"5chan\"}) and (max without(instance, job, service, subplebbit_address) (bitsocial_stats_last_community_update_fetch_success{client_id=\"5chan\"}) == 1))",
           "instant": false,
           "legendFormat": "Replies",
           "range": true,
           "refId": "B"
         }
       ],
-      "title": "Posts per hour",
+      "title": "Posts (24h)",
       "transformations": [],
       "type": "timeseries",
       "id": 7,
@@ -431,7 +431,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "Addresses that posted within the last 24 hours, 7 days and 30 days, summed per board: an address active on several boards is counted once per board.",
+      "description": "Addresses that posted within the last 24 hours, 7 days (current users) and 30 days, summed per board.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -527,7 +527,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum(max without(client_id, instance, job, service, subplebbit_address) (bitsocial_stats_community_stats_day_active_user_count{client_id=\"5chan\"}) and (max without(client_id, instance, job, service, subplebbit_address) (bitsocial_stats_last_community_update_fetch_success{client_id=\"5chan\"}) == 1))",
+          "expr": "sum(max without(instance, job, service, subplebbit_address) (bitsocial_stats_community_stats_day_active_user_count{client_id=\"5chan\"}) and (max without(instance, job, service, subplebbit_address) (bitsocial_stats_last_community_update_fetch_success{client_id=\"5chan\"}) == 1))",
           "instant": false,
           "legendFormat": "24 hours",
           "range": true,
@@ -539,7 +539,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum(max without(client_id, instance, job, service, subplebbit_address) (bitsocial_stats_community_stats_week_active_user_count{client_id=\"5chan\"}))",
+          "expr": "sum(max without(instance, job, service, subplebbit_address) (bitsocial_stats_community_stats_week_active_user_count{client_id=\"5chan\"}))",
           "instant": false,
           "legendFormat": "7 days",
           "range": true,
@@ -551,14 +551,14 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum(max without(client_id, instance, job, service, subplebbit_address) (bitsocial_stats_community_stats_month_active_user_count{client_id=\"5chan\"}))",
+          "expr": "sum(max without(instance, job, service, subplebbit_address) (bitsocial_stats_community_stats_month_active_user_count{client_id=\"5chan\"}))",
           "instant": false,
           "legendFormat": "30 days",
           "range": true,
           "refId": "C"
         }
       ],
-      "title": "Active addresses",
+      "title": "Active users",
       "transformations": [],
       "type": "timeseries",
       "id": 8,
@@ -574,7 +574,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "Cumulative threads and replies across all 5chan boards, plus unique posting addresses summed per board.",
+      "description": "Cumulative threads and replies, plus unique posting addresses summed per board.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -670,7 +670,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum(max without(client_id, instance, job, service, subplebbit_address) (bitsocial_stats_community_stats_all_post_count{client_id=\"5chan\"}))",
+          "expr": "sum(max without(instance, job, service, subplebbit_address) (bitsocial_stats_community_stats_all_post_count{client_id=\"5chan\"}))",
           "instant": false,
           "legendFormat": "Threads",
           "range": true,
@@ -682,7 +682,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum(max without(client_id, instance, job, service, subplebbit_address) (bitsocial_stats_community_stats_all_reply_count{client_id=\"5chan\"}))",
+          "expr": "sum(max without(instance, job, service, subplebbit_address) (bitsocial_stats_community_stats_all_reply_count{client_id=\"5chan\"}))",
           "instant": false,
           "legendFormat": "Replies",
           "range": true,
@@ -694,7 +694,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum(max without(client_id, instance, job, service, subplebbit_address) (bitsocial_stats_community_stats_all_active_user_count{client_id=\"5chan\"}))",
+          "expr": "sum(max without(instance, job, service, subplebbit_address) (bitsocial_stats_community_stats_all_active_user_count{client_id=\"5chan\"}))",
           "instant": false,
           "legendFormat": "Unique addresses",
           "range": true,
@@ -730,7 +730,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "Every board in the official 5chan directories. A board is offline when the monitor cannot fetch it or its latest update is more than 2 hours old. Click a column header to sort; click a board to open it on 5chan.",
+      "description": "Every board in the official 5chan directories. A board is offline when the monitor cannot fetch it or its latest update is more than 2 hours old. Current users are addresses that posted in the last 7 days. Click a column header to sort; click a board to open it on 5chan.",
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -1108,7 +1108,7 @@
             "properties": [
               {
                 "id": "custom.width",
-                "value": 90
+                "value": 100
               }
             ]
           },
@@ -1120,7 +1120,19 @@
             "properties": [
               {
                 "id": "custom.width",
-                "value": 90
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Current users"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 120
               }
             ]
           },
@@ -1133,18 +1145,6 @@
               {
                 "id": "custom.width",
                 "value": 140
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Monthly active"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 130
               }
             ]
           },
@@ -1195,7 +1195,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "label_replace(((max without(client_id, instance, job, service, subplebbit_address) (bitsocial_stats_last_community_update_fetch_seconds_since_updated_at{client_id=\"5chan\"}) < bool 7200) * max without(client_id, instance, job, service, subplebbit_address) (bitsocial_stats_last_community_update_fetch_success{client_id=\"5chan\"})) or (max without(client_id, instance, job, service, subplebbit_address) (bitsocial_stats_last_community_update_fetch_success{client_id=\"5chan\"}) * 0), \"board\", \"$1\", \"community_address\", \"(.*)\")",
+          "expr": "label_replace(((max without(instance, job, service, subplebbit_address) (bitsocial_stats_last_community_update_fetch_seconds_since_updated_at{client_id=\"5chan\"}) < bool 7200) * max without(instance, job, service, subplebbit_address) (bitsocial_stats_last_community_update_fetch_success{client_id=\"5chan\"})) or (max without(instance, job, service, subplebbit_address) (bitsocial_stats_last_community_update_fetch_success{client_id=\"5chan\"}) * 0), \"community_name\", \"$1\", \"community_address\", \"(.*)\")",
           "format": "table",
           "instant": true,
           "legendFormat": "__auto",
@@ -1208,7 +1208,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "max without(client_id, instance, job, service, subplebbit_address) (bitsocial_stats_last_community_update_fetch_seconds_since_updated_at{client_id=\"5chan\"}) and (max without(client_id, instance, job, service, subplebbit_address) (bitsocial_stats_last_community_update_fetch_success{client_id=\"5chan\"}) == 1)",
+          "expr": "max without(instance, job, service, subplebbit_address) (bitsocial_stats_last_community_update_fetch_seconds_since_updated_at{client_id=\"5chan\"}) and (max without(instance, job, service, subplebbit_address) (bitsocial_stats_last_community_update_fetch_success{client_id=\"5chan\"}) == 1)",
           "format": "table",
           "instant": true,
           "legendFormat": "__auto",
@@ -1221,7 +1221,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "max without(client_id, instance, job, service, subplebbit_address) (bitsocial_stats_community_stats_all_post_count{client_id=\"5chan\"})",
+          "expr": "max without(instance, job, service, subplebbit_address) (bitsocial_stats_community_stats_all_post_count{client_id=\"5chan\"})",
           "format": "table",
           "instant": true,
           "legendFormat": "__auto",
@@ -1234,7 +1234,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "max without(client_id, instance, job, service, subplebbit_address) (bitsocial_stats_community_stats_all_reply_count{client_id=\"5chan\"})",
+          "expr": "max without(instance, job, service, subplebbit_address) (bitsocial_stats_community_stats_all_reply_count{client_id=\"5chan\"})",
           "format": "table",
           "instant": true,
           "legendFormat": "__auto",
@@ -1247,7 +1247,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "max without(client_id, instance, job, service, subplebbit_address) (bitsocial_stats_community_stats_all_active_user_count{client_id=\"5chan\"})",
+          "expr": "max without(instance, job, service, subplebbit_address) (bitsocial_stats_community_stats_week_active_user_count{client_id=\"5chan\"})",
           "format": "table",
           "instant": true,
           "legendFormat": "__auto",
@@ -1260,7 +1260,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "max without(client_id, instance, job, service, subplebbit_address) (bitsocial_stats_community_stats_month_active_user_count{client_id=\"5chan\"})",
+          "expr": "max without(instance, job, service, subplebbit_address) (bitsocial_stats_community_stats_all_active_user_count{client_id=\"5chan\"})",
           "format": "table",
           "instant": true,
           "legendFormat": "__auto",
@@ -1273,7 +1273,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "max without(client_id, instance, job, service, subplebbit_address) (bitsocial_stats_last_community_pubsub_pubsub_peer_count{client_id=\"5chan\"})",
+          "expr": "max without(instance, job, service, subplebbit_address) (bitsocial_stats_last_community_pubsub_pubsub_peer_count{client_id=\"5chan\"})",
           "format": "table",
           "instant": true,
           "legendFormat": "__auto",
@@ -1286,7 +1286,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "max without(client_id, instance, job, service, subplebbit_address) (bitsocial_stats_community_pubsub_seconds_since_last_community_pubsub_message{client_id=\"5chan\"})",
+          "expr": "max without(instance, job, service, subplebbit_address) (bitsocial_stats_community_pubsub_seconds_since_last_community_pubsub_message{client_id=\"5chan\"})",
           "format": "table",
           "instant": true,
           "legendFormat": "__auto",
@@ -1304,11 +1304,12 @@
           "id": "organize",
           "options": {
             "excludeByName": {
-              "Time": true
+              "Time": true,
+              "client_id": true
             },
             "includeByName": {},
             "indexByName": {
-              "board": 0,
+              "community_name": 0,
               "community_address": 9,
               "Value #A": 1,
               "Value #B": 2,
@@ -1320,14 +1321,14 @@
               "Value #H": 8
             },
             "renameByName": {
-              "board": "Board",
+              "community_name": "Board",
               "community_address": "Address",
               "Value #A": "Status",
               "Value #B": "Last update",
               "Value #C": "Threads",
               "Value #D": "Replies",
-              "Value #E": "Unique addresses",
-              "Value #F": "Monthly active",
+              "Value #E": "Current users",
+              "Value #F": "Unique addresses",
               "Value #G": "Pubsub peers",
               "Value #H": "Last pubsub message"
             }
@@ -1337,7 +1338,7 @@
       "type": "table",
       "id": 11,
       "gridPos": {
-        "h": 66,
+        "h": 65,
         "w": 24,
         "x": 0,
         "y": 17
@@ -1422,7 +1423,7 @@
                 "uid": "prometheus"
               },
               "editorMode": "code",
-              "expr": "((max without(client_id, instance, job, service, subplebbit_address) (bitsocial_stats_last_community_update_fetch_seconds_since_updated_at{client_id=\"5chan\"}) < bool 7200) * max without(client_id, instance, job, service, subplebbit_address) (bitsocial_stats_last_community_update_fetch_success{client_id=\"5chan\"})) or (max without(client_id, instance, job, service, subplebbit_address) (bitsocial_stats_last_community_update_fetch_success{client_id=\"5chan\"}) * 0)",
+              "expr": "((max without(instance, job, service, subplebbit_address) (bitsocial_stats_last_community_update_fetch_seconds_since_updated_at{client_id=\"5chan\"}) < bool 7200) * max without(instance, job, service, subplebbit_address) (bitsocial_stats_last_community_update_fetch_success{client_id=\"5chan\"})) or (max without(instance, job, service, subplebbit_address) (bitsocial_stats_last_community_update_fetch_success{client_id=\"5chan\"}) * 0)",
               "instant": false,
               "legendFormat": "{{community_address}}",
               "range": true,
@@ -1437,7 +1438,7 @@
             "h": 41,
             "w": 24,
             "x": 0,
-            "y": 84
+            "y": 83
           }
         }
       ],
@@ -1448,7 +1449,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 83
+        "y": 82
       }
     }
   ],
