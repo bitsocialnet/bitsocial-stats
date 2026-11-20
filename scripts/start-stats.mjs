@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
-// Runs the local stats stack like `yarn start` runs the about site: starts Docker if needed,
-// brings up stats/compose.yaml, waits for the stats dashboard container, then serves it on a
-// Portless URL with the production paths (/, /5chan, /seedit) and opens the browser.
-// Ctrl+C stops the containers; their data stays in the Docker volumes.
+// Runs the local stats stack: starts Docker if needed, brings up compose.yaml, waits for the stats
+// dashboard container, then serves it on a Portless URL with the production paths (/, /5chan,
+// /seedit) and opens the browser. Ctrl+C stops the containers; their data stays in the Docker
+// volumes.
 
 import { spawn, spawnSync } from "node:child_process";
 import { copyFileSync, existsSync } from "node:fs";
@@ -27,8 +27,7 @@ await ensurePinnedNodeVersion(import.meta.url);
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const proxyScript = path.join(__dirname, "start-stats-proxy.mjs");
-const statsDir = path.join(repoRoot, "stats");
-const composeArgs = ["compose", "-f", path.join(statsDir, "compose.yaml")];
+const composeArgs = ["compose", "-f", path.join(repoRoot, "compose.yaml")];
 const webUrl = "http://127.0.0.1:3302";
 const dockerStartTimeoutMs = 3 * 60_000;
 const webStartTimeoutMs = 5 * 60_000;
@@ -63,9 +62,9 @@ async function ensureDocker() {
 }
 
 function ensureEnvFile() {
-  const envPath = path.join(statsDir, ".env");
+  const envPath = path.join(repoRoot, ".env");
   if (!existsSync(envPath)) {
-    copyFileSync(path.join(statsDir, ".env.example"), envPath);
+    copyFileSync(path.join(repoRoot, ".env.example"), envPath);
     console.log(`Created ${path.relative(repoRoot, envPath)} with the local defaults.`);
   }
 }

@@ -13,7 +13,7 @@ import {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const grafanaRoot = path.resolve(__dirname, "..");
-const repoRoot = path.resolve(grafanaRoot, "..", "..");
+const repoRoot = path.resolve(grafanaRoot, "..");
 const fiveChanDirectoriesBaseUrl =
   "https://raw.githubusercontent.com/bitsocialnet/lists/master/5chan-directories";
 const fiveChanDirectoriesIndexUrl =
@@ -21,7 +21,7 @@ const fiveChanDirectoriesIndexUrl =
 const fiveChanDirectoryDefaultsSourceUrl = `${fiveChanDirectoriesBaseUrl}/5chan-directories-defaults.json`;
 const seeditDefaultSubscriptionsUrl =
   "https://raw.githubusercontent.com/bitsocialnet/lists/master/seedit-default-subscriptions.json";
-const monitorDataDir = path.join(repoRoot, "stats", "monitor", "data");
+const monitorDataDir = path.join(repoRoot, "monitor", "data");
 const directoriesSnapshotPath = path.join(monitorDataDir, "5chan-directories.snapshot.json");
 const seeditSnapshotPath = path.join(monitorDataDir, "seedit-communities.snapshot.json");
 const dashboardsOutputDir = path.join(grafanaRoot, "dashboards");

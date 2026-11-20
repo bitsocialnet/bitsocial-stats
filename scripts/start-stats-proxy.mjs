@@ -7,7 +7,7 @@ import http from "node:http";
 import process from "node:process";
 import { resolvePort } from "./dev-server-utils.mjs";
 
-// Published by stats/compose.yaml.
+// Published by compose.yaml.
 const webHost = "127.0.0.1";
 const webPort = 3302;
 const host = process.env.HOST || "127.0.0.1";

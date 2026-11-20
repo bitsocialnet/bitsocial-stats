@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptDir, "..");
-const monitorRoot = path.join(repoRoot, "stats", "monitor");
+const monitorRoot = path.join(repoRoot, "monitor");
 
 function collectFiles(dir) {
   const entries = readdirSync(dir, { withFileTypes: true });

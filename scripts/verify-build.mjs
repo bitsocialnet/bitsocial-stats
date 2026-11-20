@@ -36,40 +36,27 @@ const changedPaths = [...new Set([...trackedChanges, ...untrackedChanges])];
 
 const touchesRootDependencies =
   changedPaths.includes("package.json") || changedPaths.includes("yarn.lock");
-const needsAboutBuild =
+const needsStatsMonitorCheck =
   touchesRootDependencies ||
   changedPaths.some(
-    (filePath) => filePath === "about/package.json" || filePath.startsWith("about/"),
+    (filePath) => filePath === "monitor/package.json" || filePath.startsWith("monitor/"),
   );
-const needsChainBuild =
-  touchesRootDependencies ||
-  changedPaths.some(
-    (filePath) => filePath === "chain/package.json" || filePath.startsWith("chain/"),
-  );
-const needsDocsBuild = changedPaths.some(
-  (filePath) => filePath === "docs/package.json" || filePath.startsWith("docs/"),
-);
-const needsStatsMonitorCheck = changedPaths.some(
-  (filePath) =>
-    filePath === "stats/package.json" ||
-    filePath === "stats/monitor/package.json" ||
-    filePath.startsWith("stats/monitor/"),
-);
 const needsStatsDashboardsBuild = changedPaths.some(
-  (filePath) => filePath.startsWith("stats/grafana/") || filePath.startsWith("stats/shared/"),
+  (filePath) => filePath.startsWith("grafana/") || filePath.startsWith("shared/"),
 );
 const needsStatsWebBuild =
   touchesRootDependencies ||
   changedPaths.some(
     (filePath) =>
-      filePath.startsWith("stats/web/") ||
-      filePath.startsWith("stats/shared/") ||
-      filePath === "stats/monitor/config.js",
+      filePath.startsWith("web/") ||
+      filePath.startsWith("shared/") ||
+      filePath === "monitor/config.js",
   );
 
 if (changedPaths.length === 0) {
-  console.log("No local changes detected; running the default frontend verification build.");
-  runYarnCommand(["build:about"]);
+  console.log("No local changes detected; running the default stats verification build.");
+  runYarnCommand(["build:stats-web"]);
+  runYarnCommand(["build:stats-monitor"]);
   process.exit(0);
 }
 
@@ -78,18 +65,6 @@ for (const filePath of changedPaths) {
   console.log(`- ${filePath}`);
 }
 console.log("");
-
-if (needsAboutBuild) {
-  runYarnCommand(["build:about"]);
-}
-
-if (needsChainBuild) {
-  runYarnCommand(["build:chain"]);
-}
-
-if (needsDocsBuild) {
-  runYarnCommand(["docs:build:verify"]);
-}
 
 if (needsStatsDashboardsBuild) {
   runYarnCommand(["build:stats-dashboards"]);
@@ -104,13 +79,6 @@ if (needsStatsWebBuild) {
   runYarnCommand(["workspace", "@bitsocial/stats-web", "test"]);
 }
 
-if (
-  !needsAboutBuild &&
-  !needsChainBuild &&
-  !needsDocsBuild &&
-  !needsStatsDashboardsBuild &&
-  !needsStatsMonitorCheck &&
-  !needsStatsWebBuild
-) {
+if (!needsStatsDashboardsBuild && !needsStatsMonitorCheck && !needsStatsWebBuild) {
   console.log("No targeted build checks matched the current diff.");
 }

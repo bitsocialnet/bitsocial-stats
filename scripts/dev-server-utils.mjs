@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { spawn, spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import net from "node:net";
 import path from "node:path";
 import process from "node:process";
@@ -11,7 +11,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export const repoRoot = path.resolve(__dirname, "..");
 export const isWindows = process.platform === "win32";
-const yarnBin = isWindows ? "yarn.cmd" : "yarn";
 const binDir = path.join(repoRoot, "node_modules", ".bin");
 const executableSuffix = isWindows ? ".cmd" : "";
 export const portlessBin = path.join(binDir, `portless${executableSuffix}`);
@@ -108,30 +107,6 @@ function getPreferredPortlessAppName(baseName, activeRouteHosts) {
 
 export function getPortlessPublicUrl(appName) {
   return `https://${appName}.localhost`;
-}
-
-// A Portless name depends on which routes were taken when its launcher ran, so no other process
-// can re-derive it. Launchers record the URL they claimed here, per checkout (gitignored).
-export function devServerUrlFile(name) {
-  return path.join(repoRoot, ".dev-servers", `${name}-url`);
-}
-
-// Returns a function that removes the record once the server stops, since its host is then free for
-// another checkout to claim. A record a later launcher overwrote is left alone.
-export function recordDevServerUrl(name, url) {
-  const file = devServerUrlFile(name);
-  mkdirSync(path.dirname(file), { recursive: true });
-  writeFileSync(file, `${url}\n`);
-
-  return () => {
-    try {
-      if (readFileSync(file, "utf8").trim() === url) {
-        rmSync(file, { force: true });
-      }
-    } catch {
-      // Already removed.
-    }
-  };
 }
 
 export function ensurePortlessProxy() {
@@ -253,90 +228,4 @@ export async function resolvePort(requestedPort) {
   }
 
   return port;
-}
-
-export async function waitForPort(host, port, timeoutMs = 30_000) {
-  const startedAt = Date.now();
-
-  while (Date.now() - startedAt < timeoutMs) {
-    const ready = await new Promise((resolve) => {
-      const socket = net.connect({ host, port });
-
-      socket.once("connect", () => {
-        socket.destroy();
-        resolve(true);
-      });
-      socket.once("error", () => resolve(false));
-    });
-
-    if (ready) {
-      return;
-    }
-
-    await new Promise((resolve) => setTimeout(resolve, 100));
-  }
-
-  throw new Error(`Timed out waiting for dev server on http://${host}:${port}`);
-}
-
-// Ties a server's lifetime to the launcher that spawned it: SIGINT or SIGTERM sent to the launcher
-// alone is forwarded, and the launcher exits with the server's code or signal after running onExit.
-// SIGHUP (its terminal closed) is forwarded as SIGTERM, since Portless only removes its route and
-// stops its detached server on SIGINT or SIGTERM.
-export function spawnDevServer(command, args, options, onExit) {
-  const child = spawn(command, args, options);
-
-  const forwardSignal = (signal) => {
-    if (!child.killed) {
-      child.kill(signal);
-    }
-  };
-
-  const onSigint = () => forwardSignal("SIGINT");
-  const onSigterm = () => forwardSignal("SIGTERM");
-
-  process.on("SIGINT", onSigint);
-  process.on("SIGTERM", onSigterm);
-  process.on("SIGHUP", onSigterm);
-
-  child.on("exit", (code, signal) => {
-    process.off("SIGINT", onSigint);
-    process.off("SIGTERM", onSigterm);
-    process.off("SIGHUP", onSigterm);
-    onExit?.();
-
-    if (signal) {
-      process.kill(process.pid, signal);
-      return;
-    }
-
-    process.exit(code ?? 0);
-  });
-
-  return child;
-}
-
-export function startVite(host, port) {
-  return spawnDevServer(
-    yarnBin,
-    [
-      "exec",
-      "vite",
-      "--config",
-      "about/vite.config.ts",
-      "--host",
-      host,
-      "--port",
-      String(port),
-      "--strictPort",
-    ],
-    {
-      cwd: repoRoot,
-      env: {
-        ...process.env,
-        PORTLESS: "0",
-      },
-      stdio: "inherit",
-    },
-  );
 }
