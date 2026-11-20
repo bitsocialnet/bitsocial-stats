@@ -8,7 +8,7 @@ allowed-tools: Bash(playwright-cli:*), Bash(./scripts/pw-session.sh:*), Bash(nod
 
 # Browser verification
 
-Check the affected flow and report observed results. Use the task's existing server URL; the canonical URL is `https://bitsocial.localhost`, but another worktree can have a different route. Verify route and workspace in the current source; the about, chain, docs, and stats sites have distinct launch commands.
+Check the affected flow and report observed results. Use the task's existing server URL; the canonical URL is `https://stats.bitsocial.localhost` (`yarn start`), but another worktree can have a different route, and `yarn start:stats-web` serves the dashboard with hot reload on its own Vite port. Verify the route in the current source.
 
 Use Chrome for a small browser change. Add Firefox and WebKit for shared CSS/layout/responsiveness, browser-sensitive behavior or APIs, broad interaction changes, releases, or an explicit user requirement. Include a mobile viewport when affected; resizing checks layout, not touch emulation. Run selected engines sequentially and record which were exercised.
 
@@ -35,7 +35,7 @@ Read only the reference needed:
 - [Tracing](references/tracing.md) or [video](references/video-recording.md): evidence for a failed or timing-sensitive flow.
 - [Test generation](references/test-generation.md): turn an observed reproduction into a requested durable test.
 
-For performance evidence, use `profile-browsing`; ordinary UI verification does not require a profiling pass.
+Ordinary UI verification does not require a profiling pass.
 
 ## Optional Jev checks
 

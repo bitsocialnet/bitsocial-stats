@@ -10,7 +10,7 @@ import { validateWorkflow } from "../validate-ai-workflow.mjs";
 
 const repository = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 function fixture(t) {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "bitsocial-web-workflow-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "bitsocial-stats-workflow-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   for (const relative of [
     ".agents",
@@ -39,12 +39,12 @@ test("shared sources generate valid, deterministic harness outputs", (t) => {
   assert.deepEqual(generatedFiles(root), before);
   const result = validateWorkflow(root);
   assert.deepEqual(result.errors, []);
-  assert.equal(result.roles, 5);
-  const codexTranslator = before.get(".codex/agents/translator.toml");
-  assert.match(codexTranslator, /name = ['"]translator['"]/);
-  assert.doesNotMatch(codexTranslator, /(?:^|\n)model\s*=/);
+  assert.equal(result.roles, 2);
+  const codexBrowserCheck = before.get(".codex/agents/browser-check.toml");
+  assert.match(codexBrowserCheck, /name = ['"]browser-check['"]/);
+  assert.doesNotMatch(codexBrowserCheck, /(?:^|\n)model\s*=/);
   assert.equal(
-    readFrontmatter(before.get(`.claude/agents/translator.md`)).metadata.model,
+    readFrontmatter(before.get(`.claude/agents/browser-check.md`)).metadata.model,
     undefined,
   );
   assert.equal(fs.existsSync(path.join(root, ".cursor")), false);
@@ -80,10 +80,10 @@ test("manual invocation needs the documented Codex policy as well as Claude fron
 
 test("unknown role metadata fails instead of silently changing model inheritance", (t) => {
   const root = fixture(t);
-  const file = path.join(root, ".agents/roles/translator.md");
+  const file = path.join(root, ".agents/roles/browser-check.md");
   const content = fs
     .readFileSync(file, "utf8")
-    .replace("name: translator", "name: translator\nmodel: undocumented-model");
+    .replace("name: browser-check", "name: browser-check\nmodel: undocumented-model");
   fs.writeFileSync(file, content);
   assert.throws(() => generatedFiles(root), /Unsupported role field model/);
 });
@@ -148,18 +148,18 @@ test("edit hooks and wrappers reject appended lifecycle commands", (t) => {
 
 test("role sources reject model settings and invalid sandbox values", (t) => {
   const root = fixture(t);
-  const file = path.join(root, ".agents/roles/translator.md");
+  const file = path.join(root, ".agents/roles/browser-check.md");
   const original = fs.readFileSync(file, "utf8");
   for (const key of ["model", "model_reasoning_effort", "claude-model"]) {
     fs.writeFileSync(
       file,
-      original.replace("name: translator", `name: translator\n${key}: inherit`),
+      original.replace("name: browser-check", `name: browser-check\n${key}: inherit`),
     );
     assert.throws(() => generatedFiles(root), /Unsupported role field/);
   }
   fs.writeFileSync(
     file,
-    original.replace("name: translator", "name: translator\nsandbox-mode: false"),
+    original.replace("name: browser-check", "name: browser-check\nsandbox-mode: false"),
   );
   assert.throws(() => generatedFiles(root), /Unsupported role sandbox/);
 });
@@ -207,53 +207,6 @@ for (const provider of ["codex", "claude"]) {
     if (provider === "codex") assert.ok(selected.includes('model_reasoning_effort="high"'));
   });
 }
-
-test("LLM corpus checks follow current source headings and still reject missing coverage", (t) => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "llms-check-"));
-  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
-  for (const relative of [
-    "scripts/check-llms-files.mjs",
-    "about/src/lib/apps-data.ts",
-    "chain/src/sections",
-    "about/public/translations/en/default.json",
-    "about/public/llms.txt",
-    "about/public/llms-full.txt",
-    "chain/public/llms.txt",
-    "chain/public/llms-full.txt",
-    "docs/static/llms.txt",
-    "docs/static/llms-full.txt",
-  ]) {
-    const target = path.join(root, relative);
-    fs.mkdirSync(path.dirname(target), { recursive: true });
-    fs.cpSync(path.join(repository, relative), target, { recursive: true });
-  }
-  const run = () =>
-    spawnSync(process.execPath, [path.join(root, "scripts/check-llms-files.mjs")], {
-      encoding: "utf8",
-    });
-  assert.equal(run().status, 0);
-  const translationsPath = path.join(root, "about/public/translations/en/default.json");
-  const translations = JSON.parse(fs.readFileSync(translationsPath, "utf8"));
-  const original = translations.browserPeer.title;
-  const replacement = "A revised browser section heading.";
-  translations.browserPeer.title = replacement;
-  fs.writeFileSync(translationsPath, JSON.stringify(translations));
-  for (const relative of ["about/public/llms-full.txt", "docs/static/llms-full.txt"]) {
-    const target = path.join(root, relative);
-    fs.writeFileSync(target, fs.readFileSync(target, "utf8").replaceAll(original, replacement));
-  }
-  assert.equal(run().status, 0, "copy changes should not require editing the checker");
-  const corpus = path.join(root, "about/public/llms-full.txt");
-  fs.writeFileSync(corpus, fs.readFileSync(corpus, "utf8").replaceAll(replacement, ""));
-  const missingCoverage = run();
-  assert.notEqual(missingCoverage.status, 0);
-  assert.match(missingCoverage.stderr, /omits landing copy/);
-  delete translations.browserPeer.title;
-  fs.writeFileSync(translationsPath, JSON.stringify(translations));
-  const missingTitle = run();
-  assert.notEqual(missingTitle.status, 0);
-  assert.match(missingTitle.stderr, /missing landing title: browserPeer.title/);
-});
 
 test("Impeccable context CLI keeps project facts while respecting session scope", (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "impeccable-context-"));

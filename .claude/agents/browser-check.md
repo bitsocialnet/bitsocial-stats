@@ -1,6 +1,6 @@
 ---
 name: browser-check
-description: Verify an assigned Bitsocial Web browser flow against explicit acceptance criteria.
+description: Verify an assigned Bitsocial Stats browser flow against explicit acceptance criteria.
 ---
 
 <!-- Generated from .agents/roles/browser-check.md; run yarn ai-workflow:sync. -->

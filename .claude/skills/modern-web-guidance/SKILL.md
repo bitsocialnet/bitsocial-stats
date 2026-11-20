@@ -12,4 +12,4 @@ DISABLE_TELEMETRY=1 yarn modern-web-guidance search "expand disclosure details"
 DISABLE_TELEMETRY=1 yarn modern-web-guidance retrieve accordion
 ```
 
-Apply the relevant guidance to browser-facing changes in `about/`, `chain/`, the Docusaurus UI in `docs/`, or `stats/web/`. Verify the affected surface using the [browser verification playbook](../../../docs/agent-playbooks/verification.md).
+Apply the relevant guidance to browser-facing changes in the stats dashboard under `web/`. Verify the affected surface using the [browser verification playbook](../../../docs/agent-playbooks/verification.md).

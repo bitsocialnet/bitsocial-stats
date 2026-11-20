@@ -11,4 +11,4 @@ Verify changed claims against relevant manifests, source, or runtime evidence. F
 
 Explain the outcome for the intended reader, with copyable commands where useful. Link maintained design, product, contribution, or release docs instead of duplicating their policies. Do not invent troubleshooting advice or expand a small correction into a new documentation structure.
 
-Follow `docs/agent-playbooks/verification.md` for affected documentation checks and regenerate `public/llms*.txt` when required. Include generated changes in the deliverable; commit or publish only within the user's authorization. Report the edited scope and any claim that could not be verified.
+Follow `docs/agent-playbooks/verification.md` for affected documentation checks. Include generated changes in the deliverable; commit or publish only within the user's authorization. Report the edited scope and any claim that could not be verified.

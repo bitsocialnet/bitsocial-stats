@@ -11,7 +11,7 @@ metadata:
 
 # Vercel React Guidance for This Client
 
-Select rules for the affected behavior; do not load the entire compiled `AGENTS.md` or run every rule as a checklist. The bundled reference is an upstream React/Next.js guide, while this repository contains Vite frontends and a Docusaurus docs workspace with their own state/data boundaries.
+Select rules for the affected behavior; do not load the entire compiled `AGENTS.md` or run every rule as a checklist. The bundled reference is an upstream React/Next.js guide, while this repository's dashboard is a Vite client with its own state/data boundaries.
 
 Useful starting points when relevant:
 
