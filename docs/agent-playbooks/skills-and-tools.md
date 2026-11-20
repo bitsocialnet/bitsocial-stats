@@ -8,10 +8,10 @@ Shared role prompts live in `.agents/roles/*.md`. This is a repository-specific 
 
 Verified against official documentation on 2026-09-12:
 
-| App | Project instructions | Skills used by this repository | Custom agents used by this repository |
-|---|---|---|---|
-| Codex | `AGENTS.md` | `.agents/skills/<name>/SKILL.md` | Generated `.codex/agents/<name>.toml` |
-| Claude Code | `CLAUDE.md` imports `@AGENTS.md` | Generated `.claude/skills/<name>/SKILL.md` | Generated `.claude/agents/<name>.md` |
+| App         | Project instructions             | Skills used by this repository             | Custom agents used by this repository |
+| ----------- | -------------------------------- | ------------------------------------------ | ------------------------------------- |
+| Codex       | `AGENTS.md`                      | `.agents/skills/<name>/SKILL.md`           | Generated `.codex/agents/<name>.toml` |
+| Claude Code | `CLAUDE.md` imports `@AGENTS.md` | Generated `.claude/skills/<name>/SKILL.md` | Generated `.claude/agents/<name>.md`  |
 
 Sources: [Codex skills](https://learn.chatgpt.com/docs/build-skills), [Codex subagents](https://learn.chatgpt.com/docs/agent-configuration/subagents), [Claude memory](https://code.claude.com/docs/en/memory), [Claude skills](https://code.claude.com/docs/en/skills), [Claude subagents](https://code.claude.com/docs/en/sub-agents).
 
@@ -21,33 +21,30 @@ The AI directories use LF line endings through `.gitattributes` so generated tex
 
 ## Skills
 
-| Skill | Purpose |
-|---|---|
-| `commit` | Create authorized, scoped local commits |
-| `commit-format`, `issue-format` | Format suggestions when requested |
-| `make-closed-issue` | Create an authorized issue, scoped commit and PR |
-| `review-and-merge-pr` | Triage PR feedback; fix/publish/merge only within the requested scope |
-| `fix-merge-conflicts` | Resolve conflicts and verify the merged result |
-| `release` | Prepare release wording and perform authorized release steps |
-| `code-quality-review` | Review non-trivial diffs or an explicitly requested quality concern |
-| `retro` | Turn demonstrated mistakes into focused checks or guidance that prevent recurrence |
-| `refactor-pass`, `deslop` | Requested cleanup of existing changes |
-| `debug-agent` | Evidence-based debugging, with instrumentation when needed |
-| `you-might-not-need-an-effect` | Focused effect/memo review |
-| `vercel-react-best-practices` | Applicable React performance guidance; skip Next.js/server-only rules for this Vite client |
-| `translate` | Generate translations, then apply maps through a single writer |
-| `playwright-cli`, `inspect-elements` | Browser verification and DOM-to-source mapping |
-| `profile-browsing` | Scoped browser and React profiling |
-| `test-apk` | Verify a supplied companion Android wrapper |
-| `impeccable`, `improve-threejs` | Scoped interface design and Three.js rendering review |
-| `implement-plan` | Execute a plan with optional bounded delegation |
-| `readme` | Maintain verified project documentation |
-| `context7` | Retrieve version-appropriate library documentation |
-| `find-skills` | Find additional skills when explicitly requested |
+| Skill                           | Purpose                                                                                    |
+| ------------------------------- | ------------------------------------------------------------------------------------------ |
+| `commit`                        | Create authorized, scoped local commits                                                    |
+| `commit-format`, `issue-format` | Format suggestions when requested                                                          |
+| `make-closed-issue`             | Create an authorized issue, scoped commit and PR                                           |
+| `review-and-merge-pr`           | Triage PR feedback; fix/publish/merge only within the requested scope                      |
+| `fix-merge-conflicts`           | Resolve conflicts and verify the merged result                                             |
+| `code-quality-review`           | Review non-trivial diffs or an explicitly requested quality concern                        |
+| `retro`                         | Turn demonstrated mistakes into focused checks or guidance that prevent recurrence         |
+| `refactor-pass`, `deslop`       | Requested cleanup of existing changes                                                      |
+| `debug-agent`                   | Evidence-based debugging, with instrumentation when needed                                 |
+| `you-might-not-need-an-effect`  | Focused effect/memo review                                                                 |
+| `vercel-react-best-practices`   | Applicable React performance guidance; skip Next.js/server-only rules for this Vite client |
+| `playwright-cli`                | Browser verification                                                                       |
+| `impeccable`                    | Scoped interface design                                                                    |
+| `modern-web-guidance`           | Browser support and native platform guidance for dashboard changes                         |
+| `implement-plan`                | Execute a plan with optional bounded delegation                                            |
+| `readme`                        | Maintain verified project documentation                                                    |
+| `context7`                      | Retrieve version-appropriate library documentation                                         |
+| `find-skills`                   | Find additional skills when explicitly requested                                           |
 
 ## Roles and models
 
-Keep custom roles for `browser-check`, `profiler`, `test-apk`, `translator`, and `reviewer`. Use the harness's built-in worker/general-purpose or explorer role for ordinary implementation and code discovery. The parent assigns acceptance criteria and ownership; one owner runs heavyweight checks.
+Keep custom roles for `browser-check` and `reviewer`. Use the harness's built-in worker/general-purpose or explorer role for ordinary implementation and code discovery. The parent assigns acceptance criteria and ownership; one owner runs heavyweight checks.
 
 Codex agent files include `name`, `description`, and `developer_instructions`. `.codex/config.toml` caps concurrent children at four using `max_concurrent_threads_per_session`. Shared role metadata contains the name, description, and optional sandbox mode; it deliberately has no model fields.
 
@@ -79,4 +76,4 @@ Prefer the existing skill/tool catalog and installed project CLIs. Use `gh` for 
 
 MCP overhead depends on the harness: deferred tool loading can avoid loading every schema upfront. Keep integrations relevant rather than treating MCP itself as obsolete. Existing CLI choices remain useful for reproducibility and resource control.
 
-All browser sessions use `./scripts/pw-session.sh`, which enforces one active browser machine-wide. Default to a fresh isolated session. Current personal-browser access needs explicit authorization; reuse that authorization in subsequent steps. Choose browsers/viewports for the affected behavior, run selected engines sequentially, close the exact named session in cleanup, and never use `close-all`/`kill-all`. See the `playwright-cli` skill and [verification.md](https://github.com/bitsocialnet/bitsocial-web/blob/master/docs/agent-playbooks/verification.md).
+All browser sessions use `./scripts/pw-session.sh`, which enforces one active browser machine-wide. Default to a fresh isolated session. Current personal-browser access needs explicit authorization; reuse that authorization in subsequent steps. Choose browsers/viewports for the affected behavior, run selected engines sequentially, close the exact named session in cleanup, and never use `close-all`/`kill-all`. See the `playwright-cli` skill and [verification.md](verification.md).
