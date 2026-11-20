@@ -1,3 +1,7 @@
+# The monorepo ran this file from its stats/ directory, so Compose named the project stats; keep that
+# name so local containers and data volumes carry over.
+name: stats
+
 services:
   ipfs:
     build:
