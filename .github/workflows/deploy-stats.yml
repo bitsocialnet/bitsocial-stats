@@ -16,6 +16,10 @@ concurrency:
 jobs:
   deploy:
     name: Deploy stats.bitsocial.net
+    # Deploys run only from bitsocialnet/bitsocial-stats, and only once the repository variable
+    # STATS_DEPLOY_ENABLED is "true": set it after the host receiver points at this repository
+    # (see deploy/README.md). Set it to anything else to pause deploys.
+    if: github.repository == 'bitsocialnet/bitsocial-stats' && vars.STATS_DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-24.04
     environment: stats-production
     timeout-minutes: 20
