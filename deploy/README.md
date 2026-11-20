@@ -1,40 +1,41 @@
 ## Bitsocial VPS Deploy
 
-This deployment layout assumes the repo is synced to `/srv/bitsocial-web/current` on the VPS. The VPS hosts the stats stack (monitor, Prometheus, the stats dashboard and Grafana) and serves `stats.bitsocial.net` directly; the public apex site and docs stay on Vercel.
+This deployment layout assumes the repo is synced to `/srv/bitsocial-web/current/stats` on the VPS, where the `bitsocial-web` monorepo used to keep its `stats/` directory. The VPS hosts the stats stack (monitor, Prometheus, the stats dashboard and Grafana) and serves `stats.bitsocial.net` directly; the public apex site and docs stay on Vercel.
 
 ### Expected host layout
 
-- repo checkout: `/srv/bitsocial-web/current`
+- repo checkout: `/srv/bitsocial-web/current/stats` (the revision files `.deploy-revision` and `.deploy-verified-revision` stay one level up, in `/srv/bitsocial-web/current`)
 - host Caddy config: `/etc/caddy/Caddyfile`
 - newsletter/listmonk remains on `newsletter.bitsocial.net` via `127.0.0.1:9000`
 - newsletter gateway API traffic under `/api/bitsocial/*` goes to `127.0.0.1:9011`
 - `stats.bitsocial.net` is served directly by VPS Caddy with automatic HTTPS (A record → this host)
-- Caddy proxies `stats.bitsocial.net` to the stats dashboard service on `127.0.0.1:3302` ([`stats/web`](../web)), which serves `/`, `/5chan`, `/seedit`, its read-only `/api/v1/` API, and redirects for the old Grafana shared-dashboard links
+- Caddy proxies `stats.bitsocial.net` to the stats dashboard service on `127.0.0.1:3302` ([`web`](../web)), which serves `/`, `/5chan`, `/seedit`, its read-only `/api/v1/` API, and redirects for the old Grafana shared-dashboard links
 - Grafana is no longer exposed publicly; it listens on `127.0.0.1:3300` for operators (see [Grafana access](#grafana-access))
-- Compose binds Grafana, the monitor and the dashboard to the fixed loopback ports `3300`, `3301` and `3302`. The Caddyfile and the deploy receiver's health checks use these ports, so `stats/deploy/.env` cannot change them
+- Compose binds Grafana, the monitor and the dashboard to the fixed loopback ports `3300`, `3301` and `3302`. The Caddyfile and the deploy receiver's health checks use these ports, so `deploy/.env` cannot change them
 - legacy `bitsocial.net/stats/*` URLs are 308-redirected by Vercel to `stats.bitsocial.net/*`; the old `:8080` origin is retired
 
 ### Automatic GitHub deployment
 
-Every push to `master` runs [`.github/workflows/deploy-stats.yml`](../../.github/workflows/deploy-stats.yml). The workflow uses the protected `stats-production` environment and a forced-command SSH key that can only request deployment of an exact commit SHA.
+Every push to `master` runs [`.github/workflows/deploy-stats.yml`](../.github/workflows/deploy-stats.yml). The workflow uses the protected `stats-production` environment and a forced-command SSH key that can only request deployment of an exact commit SHA.
 
-The server-side receiver is installed at `/usr/local/sbin/bitsocial-stats-deploy` from [`deploy-from-github.sh`](./deploy-from-github.sh). It downloads the matching public GitHub archive, synchronizes it to `/srv/bitsocial-web/current`, preserves `stats/deploy/.env`, writes the synced SHA to `/srv/bitsocial-web/current/.deploy-revision`, rebuilds the Docker Compose stack (the `web` service runs from the monitor image, which also builds the dashboard), refreshes the shared Grafana dashboards, runs health checks against the monitor, Grafana and the dashboard, installs the host Caddyfile when it changed (see [Activating Caddy](#activating-caddy)), and writes the SHA to `/srv/bitsocial-web/current/.deploy-verified-revision` once all of that passed. There is no automatic rollback: after a failed deploy `/srv/bitsocial-web/current` holds the revision in `.deploy-revision` (the containers run it too if the deploy got past `docker compose up`), and `.deploy-verified-revision` still names the last one that passed its checks. An empty `.deploy-verified-revision` means no deploy has passed yet.
+The server-side receiver is installed at `/usr/local/sbin/bitsocial-stats-deploy` from [`deploy-from-github.sh`](./deploy-from-github.sh). It downloads the matching public GitHub archive of `bitsocialnet/bitsocial-stats`, synchronizes it to `/srv/bitsocial-web/current/stats`, preserves `deploy/.env` there, writes the synced SHA to `/srv/bitsocial-web/current/.deploy-revision`, rebuilds the Docker Compose stack (the `web` service runs from the monitor image, which also builds the dashboard), refreshes the shared Grafana dashboards, runs health checks against the monitor, Grafana and the dashboard, installs the host Caddyfile when it changed (see [Activating Caddy](#activating-caddy)), and writes the SHA to `/srv/bitsocial-web/current/.deploy-verified-revision` once all of that passed. There is no automatic rollback: after a failed deploy `/srv/bitsocial-web/current/stats` holds the revision named in `/srv/bitsocial-web/current/.deploy-revision` (the containers run it too if the deploy got past `docker compose up`), and `.deploy-verified-revision` still names the last one that passed its checks. An empty `.deploy-verified-revision` means no deploy has passed yet.
 
-Required `stats-production` environment configuration:
+Required configuration:
 
-- variable: `STATS_DEPLOY_HOST`
-- secret: `STATS_DEPLOY_SSH_KEY`
-- secret: `STATS_DEPLOY_KNOWN_HOSTS`
+- repository variable: `STATS_DEPLOY_ENABLED` set to `true` (any other value, or none, skips the deploy job)
+- `stats-production` environment variable: `STATS_DEPLOY_HOST`
+- `stats-production` environment secret: `STATS_DEPLOY_SSH_KEY`
+- `stats-production` environment secret: `STATS_DEPLOY_KNOWN_HOSTS`
 
 The SSH public key on the server must use this forced command and restrictions:
 
 ```text
-command="/usr/local/sbin/bitsocial-stats-deploy",no-port-forwarding,no-agent-forwarding,no-X11-forwarding,no-pty,no-user-rc ssh-ed25519 ... github-actions:bitsocial-web-stats-production
+command="/usr/local/sbin/bitsocial-stats-deploy",no-port-forwarding,no-agent-forwarding,no-X11-forwarding,no-pty,no-user-rc ssh-ed25519 ... github-actions:bitsocial-stats-production
 ```
 
 ### Manual sync fallback
 
-If GitHub Actions is unavailable, regenerate the stats dashboards from the current default community lists and sync the repo from a local checkout:
+If GitHub Actions is unavailable, regenerate the stats dashboards from the current default community lists and sync the repo from a local checkout. Keep the `/deploy/.env` exclude: without it `--delete` removes the host's protected environment file:
 
 ```bash
 yarn build:stats-dashboards
@@ -47,9 +48,9 @@ rsync -az --delete \
   --exclude '.yarn' \
   --exclude '.playwright-cli' \
   --exclude '.firecrawl' \
-  --exclude 'stats/monitor/scripts' \
-  --exclude '.deploy-verified-revision' \
-  ./ root@HOST:/srv/bitsocial-web/current/
+  --exclude 'monitor/scripts' \
+  --exclude '/deploy/.env' \
+  ./ root@HOST:/srv/bitsocial-web/current/stats/
 ```
 
 ### Starting the stats stack
@@ -64,12 +65,12 @@ docker compose -f stats/deploy/compose.yaml up -d --build
 ```
 
 Set `BITSOCIAL_STATS_TELEGRAM_BOT_TOKEN` and `BITSOCIAL_STATS_TELEGRAM_CHAT_ID` in
-`stats/deploy/.env` to enable Telegram alerts for service probes. Leave them blank to keep
+`deploy/.env` to enable Telegram alerts for service probes. Leave them blank to keep
 dashboard-only monitoring.
 
 ### Activating Caddy
 
-On the production VPS, `/etc/caddy/Caddyfile` also serves sites that are not in this repository and holds private configuration, so it must never be replaced with `stats/deploy/Caddyfile`. Apply stats changes by editing only its `stats.bitsocial.net` block to match the repository's, keeping a copy to restore if the reload fails:
+On the production VPS, `/etc/caddy/Caddyfile` also serves sites that are not in this repository and holds private configuration, so it must never be replaced with `deploy/Caddyfile`. Apply stats changes by editing only its `stats.bitsocial.net` block to match the repository's, keeping a copy to restore if the reload fails:
 
 ```bash
 cp /etc/caddy/Caddyfile /root/Caddyfile.before
@@ -80,13 +81,13 @@ systemctl reload caddy
 
 Do not record the edited file's hash in `/var/lib/bitsocial-stats-deploy/caddyfile.sha256`. A recorded hash marks the file as receiver-managed, and the next deploy would replace it with the repository copy and drop the other sites.
 
-After the stack passes its health checks, the deploy receiver installs `stats/deploy/Caddyfile` to `/etc/caddy/Caddyfile` only on a host whose file it recognizes: one of the Caddyfiles the repository committed for `stats.bitsocial.net` before deploys managed it, or the one it last installed (its hash is kept in `/var/lib/bitsocial-stats-deploy/caddyfile.sha256`). It validates the release's copy, swaps it in, reloads Caddy and restores the previous file if the reload fails. Any other file is left alone, and the deploy log says so with the file's hash. On the production VPS that log line appears on every deploy and is expected.
+After the stack passes its health checks, the deploy receiver installs `deploy/Caddyfile` to `/etc/caddy/Caddyfile` only on a host whose file it recognizes: one of the Caddyfiles the repository committed for `stats.bitsocial.net` before deploys managed it, or the one it last installed (its hash is kept in `/var/lib/bitsocial-stats-deploy/caddyfile.sha256`). It validates the release's copy, swaps it in, reloads Caddy and restores the previous file if the reload fails. Any other file is left alone, and the deploy log says so with the file's hash. On the production VPS that log line appears on every deploy and is expected.
 
 The receiver installs the release's copy of itself right after syncing the tree, before the health checks, so a change to the receiver takes effect from the following deploy, even when this one fails its checks. The GitHub workflow verifies whichever of the two sites is public.
 
 ### Grafana access
 
-Grafana keeps running with the provisioned dashboards for ad-hoc queries, but only on the VPS loopback. Reach it through an SSH tunnel and log in with the admin credentials from `stats/deploy/.env`:
+Grafana keeps running with the provisioned dashboards for ad-hoc queries, but only on the VPS loopback. Reach it through an SSH tunnel and log in with the admin credentials from `deploy/.env`:
 
 ```bash
 ssh -L 3300:127.0.0.1:3300 root@HOST

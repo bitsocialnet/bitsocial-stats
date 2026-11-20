@@ -2,8 +2,12 @@
 
 set -Eeuo pipefail
 
-readonly repository="bitsocialnet/bitsocial-web"
+readonly repository="bitsocialnet/bitsocial-stats"
 readonly target_dir="/srv/bitsocial-web/current"
+# The repository is synced into stats/ under target_dir, where the bitsocial-web monorepo kept it, so
+# the protected .env, the Compose file and every bind-mounted path stayed where they were when stats
+# moved to its own repository. The revision files stay in target_dir, outside the synced tree.
+readonly stats_dir="$target_dir/stats"
 readonly deploy_script_path="/usr/local/sbin/bitsocial-stats-deploy"
 readonly public_dashboard_url="http://127.0.0.1:3300/api/public/dashboards/e9277bcc0c421ddcacd29f591466678c"
 readonly web_url="http://127.0.0.1:3302"
@@ -70,7 +74,7 @@ install_caddyfile() {
 
   known_sha=$(cat "$caddyfile_state" 2>/dev/null || true)
   if [[ $current_sha != "$known_sha" && " ${committed_caddyfile_sha256s[*]} " != *" $current_sha "* ]]; then
-    log "leaving $caddyfile_path alone: it was edited on the host (sha256 $current_sha); update its stats.bitsocial.net block by hand (see stats/deploy/README.md)"
+    log "leaving $caddyfile_path alone: it was edited on the host (sha256 $current_sha); update its stats.bitsocial.net block by hand (see deploy/README.md)"
     return
   fi
 
@@ -128,28 +132,28 @@ tar --extract --gzip --file "$archive_path" --directory "$release_root" --strip-
 
 for required_file in \
   package.json \
-  stats/deploy/compose.yaml \
-  stats/deploy/deploy-from-github.sh \
-  stats/grafana/dashboards/bitsocial-stats.json \
-  stats/monitor/Dockerfile \
-  stats/web/server/server.mjs; do
+  deploy/compose.yaml \
+  deploy/deploy-from-github.sh \
+  grafana/dashboards/bitsocial-stats.json \
+  monitor/Dockerfile \
+  web/server/server.mjs; do
   if [[ ! -f "$release_root/$required_file" ]]; then
     printf 'Release is missing %s\n' "$required_file" >&2
     exit 65
   fi
 done
 
-if [[ ! -f "$target_dir/stats/deploy/.env" ]]; then
-  printf 'Missing protected deployment environment at %s/stats/deploy/.env\n' "$target_dir" >&2
+if [[ ! -f "$stats_dir/deploy/.env" ]]; then
+  printf 'Missing protected deployment environment at %s/deploy/.env\n' "$stats_dir" >&2
   exit 66
 fi
 
-bash -n "$release_root/stats/deploy/deploy-from-github.sh"
-python3 -m json.tool "$release_root/stats/grafana/dashboards/bitsocial-stats.json" >/dev/null
+bash -n "$release_root/deploy/deploy-from-github.sh"
+python3 -m json.tool "$release_root/grafana/dashboards/bitsocial-stats.json" >/dev/null
 release_compose=(
   docker compose
-  --env-file "$target_dir/stats/deploy/.env"
-  -f "$release_root/stats/deploy/compose.yaml"
+  --env-file "$stats_dir/deploy/.env"
+  -f "$release_root/deploy/compose.yaml"
 )
 "${release_compose[@]}" config --quiet
 # The web service runs from the monitor image, which also builds the dashboard.
@@ -168,6 +172,7 @@ if [[ ! -f "$target_dir/.deploy-verified-revision" ]]; then
   fi
 fi
 
+# Excluded paths are also kept on the receiving side, so --delete never removes the protected .env.
 rsync \
   --archive \
   --delete \
@@ -175,16 +180,15 @@ rsync \
   --exclude '.git/' \
   --exclude '.playwright-cli/' \
   --exclude 'node_modules/' \
-  --exclude 'stats/deploy/.env' \
-  --exclude '.deploy-verified-revision' \
+  --exclude '/deploy/.env' \
   "$release_root/" \
-  "$target_dir/"
+  "$stats_dir/"
 
 # The tree now holds the release, so record it and install its receiver before any step below can
 # fail: a failed check then leaves the host naming the revision it runs, and the next deploy runs the
 # receiver that matches it. install replaces the file, so this running copy is unaffected.
 printf '%s\n' "$revision" > "$target_dir/.deploy-revision"
-install -m 0755 "$release_root/stats/deploy/deploy-from-github.sh" "$deploy_script_path"
+install -m 0755 "$release_root/deploy/deploy-from-github.sh" "$deploy_script_path"
 
 cd "$target_dir"
 compose=(docker compose --env-file stats/deploy/.env -f stats/deploy/compose.yaml)
