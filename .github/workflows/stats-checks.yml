@@ -3,26 +3,8 @@ name: Stats checks
 on:
   pull_request:
     branches: [master]
-    paths:
-      [
-        "stats/**",
-        "scripts/start-stats.mjs",
-        "scripts/start-stats-proxy.mjs",
-        "package.json",
-        "yarn.lock",
-        ".github/workflows/stats-checks.yml",
-      ]
   push:
     branches: [master]
-    paths:
-      [
-        "stats/**",
-        "scripts/start-stats.mjs",
-        "scripts/start-stats-proxy.mjs",
-        "package.json",
-        "yarn.lock",
-        ".github/workflows/stats-checks.yml",
-      ]
 
 permissions:
   contents: read
