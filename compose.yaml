@@ -1,8 +1,8 @@
 services:
   ipfs:
     build:
-      context: ..
-      dockerfile: stats/monitor/Dockerfile
+      context: .
+      dockerfile: monitor/Dockerfile
     command: node start-ipfs.js
     restart: unless-stopped
     volumes:
@@ -23,8 +23,8 @@ services:
 
   monitor:
     build:
-      context: ..
-      dockerfile: stats/monitor/Dockerfile
+      context: .
+      dockerfile: monitor/Dockerfile
     # The web service runs from this image as well; building the monitor builds both.
     image: bitsocial-stats-node:local
     command: node monitor.js
@@ -109,8 +109,8 @@ services:
       prometheus:
         condition: service_started
     environment:
-      GF_SECURITY_ADMIN_USER: ${BITSOCIAL_STATS_GRAFANA_ADMIN_USER:?set in stats/.env}
-      GF_SECURITY_ADMIN_PASSWORD: ${BITSOCIAL_STATS_GRAFANA_ADMIN_PASSWORD:?set in stats/.env}
+      GF_SECURITY_ADMIN_USER: ${BITSOCIAL_STATS_GRAFANA_ADMIN_USER:?set in .env}
+      GF_SECURITY_ADMIN_PASSWORD: ${BITSOCIAL_STATS_GRAFANA_ADMIN_PASSWORD:?set in .env}
       GF_AUTH_ANONYMOUS_ENABLED: "false"
       GF_AUTH_DISABLE_LOGIN_FORM: "false"
       GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/bitsocial-stats.json
@@ -129,8 +129,8 @@ services:
         condition: service_started
     environment:
       BITSOCIAL_STATS_GRAFANA_BOOTSTRAP_URL: http://grafana:3000
-      BITSOCIAL_STATS_GRAFANA_ADMIN_USER: ${BITSOCIAL_STATS_GRAFANA_ADMIN_USER:?set in stats/.env}
-      BITSOCIAL_STATS_GRAFANA_ADMIN_PASSWORD: ${BITSOCIAL_STATS_GRAFANA_ADMIN_PASSWORD:?set in stats/.env}
+      BITSOCIAL_STATS_GRAFANA_ADMIN_USER: ${BITSOCIAL_STATS_GRAFANA_ADMIN_USER:?set in .env}
+      BITSOCIAL_STATS_GRAFANA_ADMIN_PASSWORD: ${BITSOCIAL_STATS_GRAFANA_ADMIN_PASSWORD:?set in .env}
     command: node /app/ensure-shared-dashboards.mjs
     volumes:
       - ./grafana/scripts/ensure-shared-dashboards.mjs:/app/ensure-shared-dashboards.mjs:ro

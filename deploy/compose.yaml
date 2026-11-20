@@ -9,8 +9,8 @@ x-json-log-rotation: &json-log-rotation
 services:
   ipfs:
     build:
-      context: ../..
-      dockerfile: stats/monitor/Dockerfile
+      context: ..
+      dockerfile: monitor/Dockerfile
     command: node start-ipfs.js
     restart: unless-stopped
     logging: *json-log-rotation
@@ -32,8 +32,8 @@ services:
 
   monitor:
     build:
-      context: ../..
-      dockerfile: stats/monitor/Dockerfile
+      context: ..
+      dockerfile: monitor/Dockerfile
     # The web service runs from this image as well; building the monitor builds both.
     image: bitsocial-stats-node:deploy
     command: node monitor.js
