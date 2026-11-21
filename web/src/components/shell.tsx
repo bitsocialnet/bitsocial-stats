@@ -123,7 +123,7 @@ function TabBar({ overview }: { overview: Overview | undefined }) {
   );
 }
 
-const SOURCE_URL = "https://github.com/bitsocialnet/bitsocial-web/tree/master/stats";
+const SOURCE_URL = "https://github.com/bitsocialnet/bitsocial-stats";
 
 export function AppShell({
   overview,

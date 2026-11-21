@@ -3,15 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "description": "Bitsocial network stats monitor powering the stats dashboard, Prometheus and Grafana.",
-  "homepage": "https://github.com/bitsocialnet/bitsocial-web/tree/master/stats/monitor#readme",
+  "homepage": "https://github.com/bitsocialnet/bitsocial-stats/tree/master/monitor#readme",
   "bugs": {
-    "url": "https://github.com/bitsocialnet/bitsocial-web/issues"
+    "url": "https://github.com/bitsocialnet/bitsocial-stats/issues"
   },
   "license": "AGPL-3.0-only",
   "author": "Bitsocial Forge",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bitsocialnet/bitsocial-web.git"
+    "url": "git+https://github.com/bitsocialnet/bitsocial-stats.git"
   },
   "type": "module",
   "scripts": {
