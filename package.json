@@ -4,6 +4,10 @@
   "private": true,
   "description": "Bitsocial network stats: the stats.bitsocial.net dashboard, the monitor, Grafana dashboards, Prometheus config, and deployment assets.",
   "license": "AGPL-3.0-only",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bitsocialnet/bitsocial-stats.git"
+  },
   "author": "Bitsocial Forge",
   "workspaces": [
     "monitor",
