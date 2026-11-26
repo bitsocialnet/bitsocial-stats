@@ -123,6 +123,7 @@
     "tinypool": "2.2.0",
     "tmp": "0.2.7",
     "undici@npm:7.24.7": "npm:7.30.2",
+    "undici@npm:8.12.3": "npm:8.12.4",
     "undici@npm:^6.21.0": "npm:6.29.1",
     "undici@npm:^6.25.0": "npm:6.29.1",
     "undici@npm:^7.16.0": "npm:7.30.2",
