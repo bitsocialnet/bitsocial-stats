@@ -29,7 +29,7 @@
     "@libp2p/tcp": "10.1.16",
     "@libp2p/websockets": "10.1.21",
     "@multiformats/multiaddr": "12.5.1",
-    "@pkcprotocol/pkc-js": "0.0.102",
+    "@pkcprotocol/pkc-js": "0.0.163",
     "@xhmikosr/decompress": "11.1.4",
     "cborg": "1.9.6",
     "debug": "4.3.7",
